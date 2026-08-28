@@ -1,0 +1,42 @@
+{
+  "environment": "production",
+  "version": "1.0.0",
+  "pinned": false,
+  "language": "az",
+  "count": 4,
+  "messages": {
+    "auth.sign_out": {
+      "selectors": [],
+      "params": [],
+      "variants": {
+        "*": [{ "text": "Cixis" }]
+      }
+    },
+    "auth.welcome": {
+      "selectors": [],
+      "params": [{ "name": "name", "type": "STRING" }],
+      "variants": {
+        "*": [{ "text": "Xos geldiniz, " }, { "var": "name", "type": "STRING" }]
+      }
+    },
+    "billing.due": {
+      "selectors": [],
+      "params": [{ "name": "when", "type": "DATETIME" }],
+      "variants": {
+        "*": [
+          { "text": "Odenis " },
+          { "var": "when", "type": "DATETIME" },
+          { "text": " tarixindedir" }
+        ]
+      }
+    },
+    "inbox.unread": {
+      "selectors": ["count"],
+      "params": [{ "name": "count", "type": "NUMBER" }],
+      "variants": {
+        "one": [{ "var": "count", "type": "NUMBER" }, { "text": " mesaj" }],
+        "*": [{ "var": "count", "type": "NUMBER" }, { "text": " mesaj" }]
+      }
+    }
+  }
+}

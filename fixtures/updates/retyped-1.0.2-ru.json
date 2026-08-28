@@ -1,0 +1,41 @@
+{
+  "environment": "production",
+  "version": "1.0.2",
+  "pinned": false,
+  "language": "ru",
+  "count": 4,
+  "messages": {
+    "auth.sign_out": {
+      "selectors": [],
+      "params": [],
+      "variants": {
+        "*": [{ "text": "Выход" }]
+      }
+    },
+    "auth.welcome": {
+      "selectors": [],
+      "params": [{ "name": "name", "type": "STRING" }],
+      "variants": {
+        "*": [{ "text": "Добро пожаловать, " }, { "var": "name", "type": "STRING" }]
+      }
+    },
+    "billing.due": {
+      "selectors": [],
+      "params": [{ "name": "when", "type": "DATETIME" }],
+      "variants": {
+        "*": [{ "text": "Оплата до " }, { "var": "when", "type": "DATETIME" }]
+      }
+    },
+    "inbox.unread": {
+      "selectors": ["count"],
+      "params": [{ "name": "count", "type": "STRING" }],
+      "variants": {
+        "*": [
+          { "text": "У вас " },
+          { "var": "count", "type": "STRING" },
+          { "text": " сообщения" }
+        ]
+      }
+    }
+  }
+}

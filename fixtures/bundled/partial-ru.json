@@ -1,0 +1,39 @@
+{
+  "environment": "production",
+  "version": "1.0.0",
+  "pinned": false,
+  "language": "ru",
+  "count": 3,
+  "messages": {
+    "auth.sign_out": {
+      "selectors": [],
+      "params": [],
+      "variants": {
+        "*": [{ "text": "Выход" }]
+      }
+    },
+    "auth.welcome": {
+      "selectors": [],
+      "params": [{ "name": "name", "type": "STRING" }],
+      "variants": {
+        "*": [{ "text": "Добро пожаловать, " }, { "var": "name", "type": "STRING" }]
+      }
+    },
+    "inbox.unread": {
+      "selectors": ["count"],
+      "params": [{ "name": "count", "type": "NUMBER" }],
+      "variants": {
+        "one": [
+          { "text": "У вас " },
+          { "var": "count", "type": "NUMBER" },
+          { "text": " сообщение" }
+        ],
+        "*": [
+          { "text": "У вас " },
+          { "var": "count", "type": "NUMBER" },
+          { "text": " сообщения" }
+        ]
+      }
+    }
+  }
+}

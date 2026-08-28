@@ -1,0 +1,6 @@
+{
+  "auth.sign_out": [],
+  "auth.welcome": [{ "name": "name", "type": "STRING" }],
+  "billing.due": [{ "name": "when", "type": "DATETIME" }],
+  "inbox.unread": [{ "name": "count", "type": "NUMBER" }]
+}

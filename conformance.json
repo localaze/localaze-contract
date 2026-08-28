@@ -1,0 +1,347 @@
+{
+  "note": "Every case here is implemented by all three packages against fixtures/. A case passing in one package and absent in another is a defect. See runtime-contract.md for the rule each case enforces.",
+  "fixture": {
+    "project": "Postbox",
+    "sourceLanguage": "az",
+    "languages": ["az", "ru"],
+    "heldVersion": "1.0.0"
+  },
+  "cases": [
+    {
+      "id": "render.all",
+      "group": "rendering",
+      "rule": "contract §3",
+      "given": "fixtures/catalogs",
+      "expect": "Every row of fixtures/expected-renders.json renders exactly, on every platform"
+    },
+    {
+      "id": "render.missing-category-falls-back",
+      "group": "rendering",
+      "rule": "contract §2, §3 step 3",
+      "given": "A ru message whose variants omit 'many', rendered with count 5",
+      "expect": "Renders the '*' variant. Does not fail, does not return the key"
+    },
+    {
+      "id": "render.malformed-part-skipped",
+      "group": "rendering",
+      "rule": "contract §8",
+      "given": "A part object with neither text nor var",
+      "expect": "That part contributes nothing; the surrounding parts still render"
+    },
+
+    {
+      "id": "policy.patch-accepted",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "held 1.0.0, offered updates/patch-1.0.1-ru.json, policy minorAndPatch",
+      "expect": "Accepted and applied. auth.sign_out renders 'Выйти'"
+    },
+    {
+      "id": "policy.patch-accepted-under-patch-only",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "held 1.0.0, offered 1.0.1, policy patchOnly",
+      "expect": "Accepted"
+    },
+    {
+      "id": "policy.minor-accepted",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "held 1.0.0, offered updates/minor-1.1.0-ru.json, policy minorAndPatch",
+      "expect": "Accepted. The added key settings.title is present in the catalog and has no accessor"
+    },
+    {
+      "id": "policy.minor-refused-under-patch-only",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "held 1.0.0, offered 1.1.0, policy patchOnly",
+      "expect": "Refused. Previous catalog stays. onDiagnostic called naming the policy"
+    },
+    {
+      "id": "policy.major-refused-always",
+      "group": "policy",
+      "rule": "contract §5 — holds under every policy including a range",
+      "given": "held 1.0.0, offered updates/major-2.0.0-ru.json",
+      "expect": "Refused under none, patchOnly, minorAndPatch and any range. Nothing written"
+    },
+    {
+      "id": "policy.none-fetches-nothing",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "policy none",
+      "expect": "No request is made at all, not merely a refused result"
+    },
+    {
+      "id": "policy.downgrade-refused",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "held 1.1.0, offered 1.0.1",
+      "expect": "Refused. Downgrade is not an update"
+    },
+    {
+      "id": "policy.same-version-refused",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "held 1.0.0, offered 1.0.0",
+      "expect": "Refused, and not treated as an error"
+    },
+    {
+      "id": "policy.numeric-comparison",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "held 1.9.0, offered 1.10.0",
+      "expect": "Accepted. Versions compare numerically, not as strings"
+    },
+    {
+      "id": "policy.malformed-version-refused",
+      "group": "policy",
+      "rule": "contract §5",
+      "given": "offered version 'latest'",
+      "expect": "Refused, reported, no throw"
+    },
+
+    {
+      "id": "signature.retyped-parameter-refused",
+      "group": "signature",
+      "rule": "contract §4 — the case the current implementation gets wrong",
+      "given": "held 1.0.0, offered updates/retyped-1.0.2-ru.json, policy minorAndPatch",
+      "expect": "Refused. The version is a patch and passes policy, but inbox.unread retyped count from NUMBER to STRING. Checking names alone accepts it; that is the bug this case exists to catch"
+    },
+    {
+      "id": "signature.missing-key-refused",
+      "group": "signature",
+      "rule": "contract §4",
+      "given": "A catalog missing auth.sign_out",
+      "expect": "Refused whole. No key from that catalog is applied"
+    },
+    {
+      "id": "signature.added-key-ignored",
+      "group": "signature",
+      "rule": "contract §4",
+      "given": "updates/minor-1.1.0-ru.json, which adds settings.title",
+      "expect": "Accepted. An added key is not a client failure"
+    },
+    {
+      "id": "signature.extra-parameter-ignored",
+      "group": "signature",
+      "rule": "contract §4 — the signature is a floor, not an equality",
+      "given": "A present key declaring an extra parameter the signature does not name",
+      "expect": "Accepted"
+    },
+    {
+      "id": "signature.refusal-is-whole",
+      "group": "signature",
+      "rule": "contract §4",
+      "given": "A catalog where one key of four is incompatible",
+      "expect": "None of the four applied. Not three"
+    },
+    {
+      "id": "signature.rechecked-after-upgrade",
+      "group": "signature",
+      "rule": "contract §7",
+      "given": "A cached catalog from before the app upgraded, and a new signature",
+      "expect": "Checked again on load, and dropped if it no longer satisfies the new signature"
+    },
+
+    {
+      "id": "fetch.sends-if-none-match",
+      "group": "fetch",
+      "rule": "contract §6 — not done by the current implementation",
+      "given": "An ETag held from a previous fetch",
+      "expect": "If-None-Match carries it on the next request"
+    },
+    {
+      "id": "fetch.304-keeps-content",
+      "group": "fetch",
+      "rule": "contract §6",
+      "given": "Server returns 304",
+      "expect": "Current catalog untouched. Reported as success, not failure"
+    },
+    {
+      "id": "fetch.sends-api-key",
+      "group": "fetch",
+      "rule": "contract §6",
+      "given": "Any request",
+      "expect": "X-Localaze-Key carries the configured key. The project and environment appear in no parameter"
+    },
+    {
+      "id": "fetch.pinned-version",
+      "group": "fetch",
+      "rule": "contract §6",
+      "given": "A pinned version",
+      "expect": "version=x.y.z on the request, and the pinned release is what arrives"
+    },
+    {
+      "id": "fetch.nothing-written-before-signature-passes",
+      "group": "fetch",
+      "rule": "contract §6",
+      "given": "A downloaded catalog that fails the signature check",
+      "expect": "The cache is not touched. Order is policy, version, download, signature, persist"
+    },
+
+    {
+      "id": "resolution.applied-over-cached-over-bundled",
+      "group": "resolution",
+      "rule": "contract §7",
+      "given": "All four levels present with different text for one key",
+      "expect": "Applied wins, then cached, then bundled, then compiled-in"
+    },
+    {
+      "id": "resolution.per-key-fallback",
+      "group": "resolution",
+      "rule": "contract §7 — per key, not per catalog",
+      "given": "fixtures/bundled/partial-ru.json, which omits billing.due",
+      "expect": "billing.due falls through to the compiled-in copy while the other three come from the asset"
+    },
+    {
+      "id": "resolution.cache-survives-launch",
+      "group": "resolution",
+      "rule": "contract §7",
+      "given": "A catalog applied and persisted, then a fresh start",
+      "expect": "The persisted catalog is used ahead of the bundled copy"
+    },
+    {
+      "id": "resolution.no-cache-directory-is-session-only",
+      "group": "resolution",
+      "rule": "contract §9",
+      "given": "cacheDirectory unset",
+      "expect": "An applied update works for the session and is gone on restart. Not an error"
+    },
+    {
+      "id": "resolution.offline-first-launch",
+      "group": "resolution",
+      "rule": "LZ-58 — works fully offline on first launch",
+      "given": "Fresh install, no network, no cache",
+      "expect": "Every key renders from the bundled asset with no request made"
+    },
+
+    {
+      "id": "failure.network-unreachable",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "Transport throws",
+      "expect": "Returns, does not throw. Current content kept. onDiagnostic called"
+    },
+    {
+      "id": "failure.timeout",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "Transport exceeds the configured timeout",
+      "expect": "Returns, does not throw. Current content kept"
+    },
+    {
+      "id": "failure.non-200",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "Server returns 401, 403, 404 or 500",
+      "expect": "Returns, does not throw. The status appears in the diagnostic, because a 401 is a wrong key and must be distinguishable from a quiet network"
+    },
+    {
+      "id": "failure.malformed-json",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "updates/malformed-syntax-ru.txt",
+      "expect": "Returns, does not throw. Current content kept"
+    },
+    {
+      "id": "failure.missing-messages",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "updates/malformed-shape-ru.json",
+      "expect": "Returns, does not throw. Current content kept"
+    },
+    {
+      "id": "failure.corrupt-cache-ignored",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "An unreadable or truncated cache file",
+      "expect": "Ignored, falls through to bundled. Reported, not thrown"
+    },
+    {
+      "id": "failure.missing-asset",
+      "group": "failure",
+      "rule": "contract §8 — why the compiled-in copy exists",
+      "given": "assetPath points nowhere",
+      "expect": "Every key renders from the compiled-in copy. A path typo is stale text, never a blank screen"
+    },
+    {
+      "id": "failure.unwritable-cache",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "The cache directory cannot be written",
+      "expect": "The update applies for this session and is reported as not persisted. Not an error"
+    },
+    {
+      "id": "failure.throwing-diagnostic-caught",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "onDiagnostic itself throws",
+      "expect": "Swallowed. A broken diagnostic must not take the app with it"
+    },
+    {
+      "id": "failure.no-public-api-throws",
+      "group": "failure",
+      "rule": "contract §8 — the rule the whole group serves",
+      "given": "Every failure above, exercised against every public method",
+      "expect": "Not one throws, returns a failed future, or propagates"
+    },
+    {
+      "id": "failure.last-status-readable",
+      "group": "failure",
+      "rule": "contract §8",
+      "given": "Any completed fetch attempt",
+      "expect": "Last-fetch status is readable, so an app can report it rather than guess"
+    },
+
+    {
+      "id": "config.key-only-works",
+      "group": "config",
+      "rule": "contract §9",
+      "given": "Constructed with only an apiKey",
+      "expect": "Every other option takes its documented default and the SDK behaves sensibly"
+    },
+    {
+      "id": "config.apply-immediately-off-by-default",
+      "group": "config",
+      "rule": "contract §9",
+      "given": "A catalog accepted mid-session, default config",
+      "expect": "Rendering is unchanged until next launch. Text changing under a user mid-session is worse than being a launch out of date"
+    },
+    {
+      "id": "config.version-in-use-readable",
+      "group": "config",
+      "rule": "LZ-65",
+      "given": "Any state",
+      "expect": "The version currently rendering is readable, so an app can report it"
+    },
+
+    {
+      "id": "purity.no-mf2-parser",
+      "group": "purity",
+      "rule": "contract §2, decision D7",
+      "given": "The package source",
+      "expect": "No MF2 parsing, no '.match', no '.input', no '{{'. A device never sees MF2 syntax"
+    },
+    {
+      "id": "purity.no-cldr-data",
+      "group": "purity",
+      "rule": "contract §3 step 2",
+      "given": "The package source",
+      "expect": "No CLDR tables. Plural categories resolve through rules the generator compiled in"
+    },
+    {
+      "id": "purity.no-translations-in-package",
+      "group": "purity",
+      "rule": "sdks/CLAUDE.md",
+      "given": "The package source",
+      "expect": "No key names, no translated text, no project identifier. The packages are generic"
+    },
+    {
+      "id": "purity.core-has-no-platform-io",
+      "group": "purity",
+      "rule": "contract §10",
+      "given": "The core source",
+      "expect": "No direct network or filesystem call. Transport and storage arrive as injected interfaces"
+    }
+  ]
+}

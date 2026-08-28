@@ -1,0 +1,54 @@
+{
+  "note": "Rendered output every package must produce from fixtures/catalogs. Dates render ISO-8601 UTC per runtime-contract.md section 3.",
+  "renders": [
+    { "locale": "az", "key": "auth.sign_out", "args": {}, "expect": "Cixis" },
+    { "locale": "ru", "key": "auth.sign_out", "args": {}, "expect": "Выход" },
+
+    { "locale": "az", "key": "auth.welcome", "args": { "name": "Ayan" }, "expect": "Xos geldiniz, Ayan" },
+    { "locale": "ru", "key": "auth.welcome", "args": { "name": "Аян" }, "expect": "Добро пожаловать, Аян" },
+    { "locale": "ru", "key": "auth.welcome", "args": { "name": "" }, "expect": "Добро пожаловать, " },
+
+    {
+      "locale": "az",
+      "key": "billing.due",
+      "args": { "when": "2026-03-01T00:00:00Z" },
+      "expect": "Odenis 2026-03-01T00:00:00Z tarixindedir"
+    },
+    {
+      "locale": "ru",
+      "key": "billing.due",
+      "args": { "when": "2026-03-01T00:00:00Z" },
+      "expect": "Оплата до 2026-03-01T00:00:00Z"
+    },
+
+    { "locale": "az", "key": "inbox.unread", "args": { "count": 0 }, "expect": "0 mesaj", "category": "*" },
+    { "locale": "az", "key": "inbox.unread", "args": { "count": 1 }, "expect": "1 mesaj", "category": "one" },
+    { "locale": "az", "key": "inbox.unread", "args": { "count": 5 }, "expect": "5 mesaj", "category": "*" },
+
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 0 }, "expect": "У вас 0 сообщений", "category": "many" },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 1 }, "expect": "У вас 1 сообщение", "category": "one" },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 2 }, "expect": "У вас 2 сообщения", "category": "few" },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 4 }, "expect": "У вас 4 сообщения", "category": "few" },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 5 }, "expect": "У вас 5 сообщений", "category": "many" },
+    {
+      "locale": "ru",
+      "key": "inbox.unread",
+      "args": { "count": 11 },
+      "expect": "У вас 11 сообщений",
+      "category": "many",
+      "why": "11 is the exception the Russian rule exists for. Without the i % 100 != 11 exclusion it selects one."
+    },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 14 }, "expect": "У вас 14 сообщений", "category": "many" },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 21 }, "expect": "У вас 21 сообщение", "category": "one" },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 22 }, "expect": "У вас 22 сообщения", "category": "few" },
+    { "locale": "ru", "key": "inbox.unread", "args": { "count": 101 }, "expect": "У вас 101 сообщение", "category": "one" },
+    {
+      "locale": "ru",
+      "key": "inbox.unread",
+      "args": { "count": 111 },
+      "expect": "У вас 111 сообщений",
+      "category": "many",
+      "why": "The same exception at the next hundred. A rule that only special-cases a literal 11 gets this wrong."
+    }
+  ]
+}

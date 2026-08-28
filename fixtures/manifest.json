@@ -1,0 +1,33 @@
+{
+  "projectName": "Postbox",
+  "sourceLanguage": "az",
+  "languages": ["az", "ru"],
+  "contentHash": "hash1",
+  "version": "1.0.0",
+  "keys": [
+    {
+      "key": "auth.sign_out",
+      "params": [],
+      "selects": false,
+      "variantKeys": ["*"]
+    },
+    {
+      "key": "auth.welcome",
+      "params": [{ "name": "name", "type": "STRING" }],
+      "selects": false,
+      "variantKeys": ["*"]
+    },
+    {
+      "key": "billing.due",
+      "params": [{ "name": "when", "type": "DATETIME" }],
+      "selects": false,
+      "variantKeys": ["*"]
+    },
+    {
+      "key": "inbox.unread",
+      "params": [{ "name": "count", "type": "NUMBER" }],
+      "selects": true,
+      "variantKeys": ["one", "*"]
+    }
+  ]
+}
