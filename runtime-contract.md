@@ -135,8 +135,10 @@ Policy is about **intent** — "we do not want minor updates in this build". The
 Rules that hold under every policy, including a range:
 
 - **A different major is refused.** `LZ-62` defines major as signature-breaking by construction, so its messages no longer take the parameters generated call sites pass. That is not a stale screen, it is a wrong one.
-- A version less than or equal to the one held is refused. Downgrade is not an update.
+- A version **older** than the one held is refused. Downgrade is not an update.
 - A refused update leaves the previous catalog in place.
+
+**The version the app already holds is `upToDate`, not a refusal.** Nothing was refused; the server and the app agree. Reporting it as `refusedByPolicy` reads, in a log and in a UI, as though the policy blocked something — which sends whoever is debugging to the wrong setting. This case is by far the most common outcome in production, so it is the one whose wording matters most.
 
 Versions compare numerically field by field, not as strings: `1.10.0` is greater than `1.9.0`. A malformed version compares as refused.
 
@@ -148,7 +150,7 @@ Versions compare numerically field by field, not as strings: `1.10.0` is greater
 
 | Call | Endpoint | Purpose |
 |---|---|---|
-| `currentVersion()` | `GET /api/v1/read/version` | What the key serves now. No translations, cheap enough for every launch |
+| `currentVersion()` | `GET /api/v1/read/version` | What the key serves now. No translations, cheap enough for every launch. **A non-200 here is reported with its status**, exactly as on the translations path — a 401 is a wrong key, and without the status it is indistinguishable from a quiet network |
 | `fetchIfAccepted(language)` | `GET /api/v1/read/translations/{lang}?format=resolved` | One catalog |
 | pinned | `…&version=x.y.z` | A release that cannot move underneath a build |
 
