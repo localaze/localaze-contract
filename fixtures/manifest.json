@@ -1,9 +1,20 @@
 {
-  "projectName": "Postbox",
+  "environment": "production",
+  "version": "1.0.0",
+  "pinned": true,
   "sourceLanguage": "az",
   "languages": ["az", "ru"],
-  "contentHash": "hash1",
-  "version": "1.0.0",
+  "contentHash": "6da3ab75b29e3a4d",
+  "pluralRules": {
+    "az": {
+      "one": "n == 1"
+    },
+    "ru": {
+      "few": "(v == 0 && ((i % 10) >= 2 && (i % 10) <= 4) && !(((i % 100) >= 12 && (i % 100) <= 14)))",
+      "many": "((v == 0 && (i % 10) == 0) || (v == 0 && ((i % 10) >= 5 && (i % 10) <= 9)) || (v == 0 && ((i % 100) >= 11 && (i % 100) <= 14)))",
+      "one": "(v == 0 && (i % 10) == 1 && !((i % 100) == 11))"
+    }
+  },
   "keys": [
     {
       "key": "auth.sign_out",
@@ -29,5 +40,6 @@
       "selects": true,
       "variantKeys": ["one", "*"]
     }
-  ]
+  ],
+  "gaps": []
 }
