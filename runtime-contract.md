@@ -254,6 +254,6 @@ Key to accessor: split on `.` and `_`, lower-camel the result. `auth.sign_out` b
 
 `fixtures/` holds one fixture project — `Postbox`, source `az`, languages `az` and `ru` — and is the single input all three packages are tested against. `conformance.json` enumerates the cases.
 
-The fixture is currently duplicated in Java, in `GeneratorConformanceTest.java`. **Phase 4 points that test at these files**, so there is one fixture rather than two that drift. Until then, a change here must be mirrored there.
+These files are the only copy of the fixture. The generators are tested against them too — see `generator-contract.md` §9.
 
 The Azerbaijani plural variants `one` and `*` carry identical text. That is correct, not an oversight — Azerbaijani does not inflect the noun after a numeral — and it is why the Russian message carries the selection assertions.

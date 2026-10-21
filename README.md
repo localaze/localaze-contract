@@ -4,7 +4,8 @@ Not a package. The one written specification the three SDKs implement, and the o
 
 | File | Contents |
 |---|---|
-| `runtime-contract.md` | **The specification.** Catalog format, rendering, signature, update policy, fetching, resolution order, failure, configuration |
+| `runtime-contract.md` | **The runtime specification.** Catalog format, rendering, signature, update policy, fetching, resolution order, failure, configuration |
+| `generator-contract.md` | **The generator specification.** The command, its inputs and checks, and the generated source every platform emits |
 | `conformance.json` | Every case all three packages must pass, with the rule each one enforces |
 | `fixtures/manifest.json` | The typed manifest for the fixture project, as `LZ-53` defines it |
 | `fixtures/signature.json` | What the generated code promises — names **and** types |
@@ -45,20 +46,17 @@ It is a **patch**, so the policy accepts it. Every key is present, so a key-set 
 
 But the type changed from `NUMBER` to `STRING`, and the message stopped selecting. Generated code has already promised every call site `inboxUnread(count: Int)`. Applying this catalog makes that promise false.
 
-`appendSignature` in `backend/.../codegen/service/DartGenerator.java` emits `Map<String, List<String>>` — parameter names only — so the current implementation accepts this catalog. That is the defect. This fixture is the regression test for it.
+The backend's Dart generator, since removed, emitted a signature of parameter names only, so the runtime it generated accepted this catalog. That was the defect. This fixture is the regression test for it.
 
 ## Keeping it single
 
-The fixture is currently duplicated in Java, in
-`backend/localaze/src/test/java/dev/sharpy/localaze/codegen/service/GeneratorConformanceTest.java`.
+These files are the only copy. The backend generators, and the Java copy of this fixture their tests carried, were removed when generation moved into the SDKs.
 
-Phase 4 points that test at these files, so there is one fixture rather than two that drift. **Until then, a change here must be mirrored there.**
-
-The catalogs are hand-written to the shape `Mf2Resolver.resolve` produces. Phase 4 adds a test asserting the checked-in fixtures equal the server's own output, so drift is caught rather than assumed away.
+`manifest.json` was produced by the server's own plural rule compiler and hashing. The catalogs are hand-written to the shape `Mf2Resolver.resolve` produces. Nothing yet asserts that the checked-in files equal the server's output, so a change to either side of that boundary must be mirrored by hand.
 
 ## Adding a case
 
-1. Write the rule in `runtime-contract.md` first.
+1. Write the rule in `runtime-contract.md` or `generator-contract.md` first.
 2. Add the fixture it needs.
 3. Add the case to `conformance.json`.
 4. Implement it in **all three** packages.

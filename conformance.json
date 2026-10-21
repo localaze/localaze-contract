@@ -345,6 +345,97 @@
       "rule": "contract §10",
       "given": "The core source",
       "expect": "No direct network or filesystem call. Transport and storage arrive as injected interfaces"
+    },
+    {
+      "id": "generator.golden",
+      "group": "generator",
+      "rule": "generator-contract.md §8, §9",
+      "given": "fixtures/manifest.json and fixtures/catalogs, offline",
+      "expect": "Output is byte-identical to the package's checked-in golden file"
+    },
+    {
+      "id": "generator.renders-all",
+      "group": "generator",
+      "rule": "generator-contract.md §9",
+      "given": "The golden output compiled against the package",
+      "expect": "Every row of fixtures/expected-renders.json renders exactly"
+    },
+    {
+      "id": "generator.catalogs-written",
+      "group": "generator",
+      "rule": "generator-contract.md §5",
+      "given": "Any successful run",
+      "expect": "--assets holds one <language>.json per manifest language, byte-identical to its input catalog"
+    },
+    {
+      "id": "generator.typed-accessors",
+      "group": "generator",
+      "rule": "generator-contract.md §6",
+      "given": "fixtures/manifest.json",
+      "expect": "authSignOut is a property; authWelcome takes a string; billingDue a date; inboxUnread a number and passes it as the selector"
+    },
+    {
+      "id": "generator.missing-catalog",
+      "group": "generator",
+      "rule": "generator-contract.md §4",
+      "given": "A manifest language with no catalog file",
+      "expect": "Exits non-zero naming the language. Nothing written"
+    },
+    {
+      "id": "generator.missing-key",
+      "group": "generator",
+      "rule": "generator-contract.md §4",
+      "given": "A catalog lacking a manifest key",
+      "expect": "Exits non-zero naming the key and language. Nothing written"
+    },
+    {
+      "id": "generator.allow-gaps",
+      "group": "generator",
+      "rule": "generator-contract.md §2, §4",
+      "given": "The same catalog with --allow-gaps",
+      "expect": "Generates. The gap is reported, not fatal"
+    },
+    {
+      "id": "generator.version-mismatch",
+      "group": "generator",
+      "rule": "generator-contract.md §4",
+      "given": "A catalog whose version differs from the manifest's",
+      "expect": "Exits non-zero naming both versions. Nothing written"
+    },
+    {
+      "id": "generator.unsupported-operand",
+      "group": "generator",
+      "rule": "generator-contract.md §4, §7",
+      "given": "A plural rule mentioning operand f",
+      "expect": "Exits non-zero naming the language and operand. Nothing written"
+    },
+    {
+      "id": "generator.accessor-collision",
+      "group": "generator",
+      "rule": "generator-contract.md §4, §6",
+      "given": "Keys a.b_c and a_b.c",
+      "expect": "Exits non-zero naming both keys. Nothing written"
+    },
+    {
+      "id": "generator.reserved-member",
+      "group": "generator",
+      "rule": "generator-contract.md §4, §5",
+      "given": "A key named runtime",
+      "expect": "Exits non-zero naming the key. Nothing written"
+    },
+    {
+      "id": "generator.all-problems-reported",
+      "group": "generator",
+      "rule": "generator-contract.md §2",
+      "given": "A run with several of the problems above",
+      "expect": "Every problem is printed, not only the first"
+    },
+    {
+      "id": "generator.plural-guard",
+      "group": "generator",
+      "rule": "generator-contract.md §7",
+      "given": "A selector that is infinite, NaN or at least 10^15",
+      "expect": "Resolves to no category and renders the catch-all. Does not crash"
     }
   ]
 }
