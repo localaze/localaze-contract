@@ -149,13 +149,13 @@ The manifest's `pluralRules` carries each language's categories as conditions ov
 | Swift | `(n % k)` → `n.truncatingRemainder(dividingBy: k)` | Swift has no `%` on floating-point values |
 | Kotlin | every integer literal `k` → `k.0`, with `i` and `v` declared as `Double` | Kotlin will not compare a `Double` or a `Long` with an `Int` literal |
 
-**Resolver.** `plural(locale, value)` dispatches to one function per language. Each returns the first category whose condition holds, and no category otherwise. Categories are tested in the manifest's order. CLDR categories are mutually exclusive, so the order does not change the result.
+**Resolver.** `plural(locale, value)` dispatches to one function per language. Each returns the first category whose condition holds, and no category otherwise. Categories are tested in name order, which is also the order the server emits them. Not every platform's JSON reader keeps an object's order, and CLDR categories are mutually exclusive, so name order changes nothing but makes every generator agree.
 
 ---
 
 ## 8. Determinism
 
-The same manifest and catalogs produce byte-identical output on every run and every machine. Keys follow the manifest's order, languages follow the manifest's order, and plural categories follow the manifest's order. No timestamp, no absolute path, no machine name.
+The same manifest and catalogs produce byte-identical output on every run and every machine. Keys follow the manifest's order, languages follow the manifest's order, and plural categories are sorted by name. No timestamp, no absolute path, no machine name.
 
 That is what lets the generated file be checked in and reviewed, and what makes the golden-file tests in §9 possible.
 
