@@ -64,9 +64,12 @@ Generation fails, naming each problem, when:
 | A catalog lacks a key the manifest names | Required translations. Waived by `--allow-gaps` |
 | A catalog's `version` differs from the manifest's | The code and the text would describe different releases |
 | A plural rule uses an operand other than `n`, `i` or `v` | §7 declares only those three. Failing is better than generating code that does not compile |
+| A plural rule contains anything but those operands, integers, whitespace, parentheses and the operators of §7 | The condition is pasted into source. Anything else is either a server bug or an injection, and neither should compile |
+| A message selects on a parameter that is not `NUMBER` | The runtime resolves plural categories only. A selection on a string would silently render the catch-all every time |
 | Two keys produce the same accessor name | One would silently shadow the other |
 | An accessor name collides with a generated member (§5) | The same |
-| A key or parameter produces an empty identifier, or one starting with a digit | It cannot be compiled |
+| A key or parameter produces an empty identifier, one starting with a digit, or one with a character outside ASCII letters and digits | It cannot be compiled on every platform |
+| Two parameters of one message produce the same identifier | The accessor could not declare both |
 
 The server's strict manifest has already checked parameter types across languages. The generator does not repeat that check.
 
@@ -85,7 +88,7 @@ One file, in this order. Every platform emits the same sections with the same co
    - `forLocale(locale, config)` — builds the runtime with the signature, the plural resolver and the compiled-in catalog for `locale`, falling back to the source language's
    - `runtime` — exposed so the app can reach the update machinery
 
-   Those names are reserved: a key whose accessor would take one fails generation.
+   Those names are reserved, and so are `hashCode`, `toString`, `equals`, `runtimeType` and `noSuchMethod`, which a base type already has on at least one platform. A key whose accessor would take one fails generation on **every** platform, so a key set that generates for Dart also generates for Swift and Kotlin.
 3. **One accessor per key**, in manifest order (§6).
 4. **The signature** — every key with its parameter names and types, from the manifest.
 5. **Plural rules** (§7).
@@ -105,7 +108,9 @@ Every accessor gets a documentation comment previewing the source-language text:
 
 A name reserved by the target language is escaped the way that language escapes it: backticks in Swift and Kotlin. Dart has no escape, so the name takes a trailing underscore: `in` → `in_`. That is the one place call sites differ, and only for a name no team would choose.
 
-**Shape.** A key with no parameters is a property, not a call. A key with parameters is a function taking each one, named and required. A key that selects passes its selector's value to the runtime as the plural selector.
+**Shape.** A key with no parameters is a property, not a call. A key with parameters is a function taking each one, named and required, in manifest order. A key that selects passes its selector's value to the runtime as the plural selector. The selector is the first entry of `selectors` in the source language's catalog message, since the manifest says only that a message selects.
+
+The accessor reaches the runtime through `this` or `self` explicitly, so a parameter named `runtime` cannot shadow it.
 
 **Types.**
 

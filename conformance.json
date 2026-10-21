@@ -436,6 +436,20 @@
       "rule": "generator-contract.md §7",
       "given": "A selector that is infinite, NaN or at least 10^15",
       "expect": "Resolves to no category and renders the catch-all. Does not crash"
+    },
+    {
+      "id": "generator.non-number-selector",
+      "group": "generator",
+      "rule": "generator-contract.md §4",
+      "given": "A message selecting on a STRING parameter",
+      "expect": "Exits non-zero naming the key and parameter. Nothing written"
+    },
+    {
+      "id": "generator.unrecognised-rule",
+      "group": "generator",
+      "rule": "generator-contract.md §4, §7",
+      "given": "A plural rule containing a character outside the operator set",
+      "expect": "Exits non-zero naming the language. Nothing written"
     }
   ]
 }
