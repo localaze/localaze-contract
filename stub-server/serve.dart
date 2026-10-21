@@ -5,9 +5,11 @@
 /// all of that, but only by publishing releases, which is a slow way to check
 /// that a refusal works.
 ///
-/// This serves the **same three endpoints, with the same headers**, so an app
-/// pointed at it behaves exactly as it does against production:
+/// This serves the **same endpoints, with the same headers**, so an app pointed
+/// at it behaves exactly as it does against production, and a generator pointed
+/// at it generates exactly what it would from a real release:
 ///
+///   GET /api/v1/read/manifest[?version=1.0.0]
 ///   GET /api/v1/read/version
 ///   GET /api/v1/read/translations/{lang}?format=resolved[&version=x.y.z]
 ///
@@ -139,11 +141,39 @@ Future<void> _handle(HttpRequest request) async {
     return request.response.close();
   }
 
+  if (path == '/api/v1/read/manifest') return _manifest(request);
   if (path == '/api/v1/read/version') return _version(request);
   if (path.startsWith('/api/v1/read/translations/')) return _translations(request);
 
   _log(request, 404, '');
   request.response.statusCode = HttpStatus.notFound;
+  await request.response.close();
+}
+
+/// The manifest of the release the apps are built against.
+///
+/// Only `base` has one: the update scenarios exist to be offered to an app
+/// that was already generated, not to generate from. Asking for another
+/// version is a 404 naming the one that exists, as the real server does.
+Future<void> _manifest(HttpRequest request) async {
+  final pinned = request.uri.queryParameters['version'];
+  if (pinned != null && pinned != Scenario.base.version) {
+    _log(request, 404, 'no manifest for $pinned');
+    request.response
+      ..statusCode = HttpStatus.notFound
+      ..headers.contentType = ContentType.json
+      ..write(jsonEncode({
+        'detail': 'Version $pinned has no manifest here. '
+            'Available: ${Scenario.base.version}.',
+      }));
+    return request.response.close();
+  }
+
+  _log(request, 200, 'manifest ${Scenario.base.version}');
+  request.response
+    ..statusCode = HttpStatus.ok
+    ..headers.contentType = ContentType.json
+    ..write(File('${fixtures.path}/manifest.json').readAsStringSync());
   await request.response.close();
 }
 
@@ -290,6 +320,7 @@ void _printBanner(int port) {
 Localaze stub read API on http://localhost:$port
   API key: $apiKey
 
+  GET /api/v1/read/manifest[?version=1.0.0]
   GET /api/v1/read/version
   GET /api/v1/read/translations/{ru|az}?format=resolved[&version=x.y.z]
 
