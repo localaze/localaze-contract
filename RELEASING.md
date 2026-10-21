@@ -2,6 +2,10 @@
 
 How the Dart, Swift and Kotlin packages are versioned and published. Every step below was rehearsed locally against a throwaway consumer; **nothing has been tagged, pushed or uploaded**.
 
+## License
+
+MIT, copyright Sharabiddin Ahmayev. `LICENSE` sits at the repository root and in every package, because each one is consumed on its own — the Swift package from a repository of its own — and pub checks the package folder. The Maven POMs declare it too.
+
 ## Versioning
 
 **One version for all three platforms.** `LZ-54` guarantees the packages behave identically, and that guarantee is only checkable if "0.3.0" means the same contract on every platform. A change to one package is released as a new version of all of them, even when the others did not change.
@@ -122,7 +126,6 @@ The split repository does not contain `contract/`, so its tests cannot run there
 
 | Item | Why it blocks | Who decides |
 |---|---|---|
-| A `LICENSE` in each package | `dart pub publish` refuses without one, and a Maven or Swift consumer has no terms to rely on | The project owner |
 | The Maven registry, and its credentials in CI | `LOCALAZE_MAVEN_URL` has nowhere to point | Whoever owns the registry |
 | The Swift repository | The split has nowhere to go | Whoever owns the GitLab group |
 | Confirming the baselines | Each package's `CLAUDE.md` records them as chosen, not confirmed | The app teams |
