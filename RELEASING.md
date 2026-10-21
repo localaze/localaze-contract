@@ -4,7 +4,7 @@ How the Dart, Swift and Kotlin packages are versioned and published. Every step 
 
 ## License
 
-MIT, copyright Sharabiddin Ahmayev. `LICENSE` sits at the repository root and in every package, because each one is consumed on its own — the Swift package from a repository of its own — and pub checks the package folder. The Maven POMs declare it too.
+MIT, copyright Sharabiddin Ahmayev, while the platform around them is under the Elastic License 2.0 (`LICENSING.md` at the root). `frontend/sdks/LICENSE` covers everything in this folder, and each package carries its own copy, because each one is consumed on its own — the Swift package from a repository of its own — and pub checks the package folder. The Maven POMs declare it too.
 
 ## Versioning
 
