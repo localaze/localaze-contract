@@ -84,7 +84,14 @@ Without the platform repository, the same steps by hand: set the version in ever
 
 ## What each tag does
 
-**Kotlin.** The tag's release job builds the three artifacts, signs every file with the release GPG key, and uploads them to the Central Portal as **one** deployment. Central validates it; a deployment that fails validation publishes nothing. Accepted versions take up to about thirty minutes to appear in search. The job's secrets — the Portal token and the signing key — exist only in that job, on a tag.
+**Kotlin.** The tag's release job (`.github/workflows/release.yml`) checks the tag is on `main` and matches both `build.gradle.kts` files, runs the tests, publishes the three artifacts signed into `build/staging-deploy/`, and `scripts/central-upload.sh` uploads that folder to the Central Portal as **one** deployment. Central validates it as a whole; a deployment that fails validation publishes nothing, and the job prints Central's reasons. An accepted version takes up to about thirty minutes to appear in search. CI runs the same path on every pull request with a throwaway key, stopping short of the upload.
+
+One-time setup, done once by the owner of the `dev.sharpy` namespace:
+
+1. A [Central Portal](https://central.sonatype.com) account, and the namespace `dev.sharpy` verified there with the DNS TXT record it asks for on `sharpy.dev`.
+2. A user token from the Portal (*View Account → Generate User Token*).
+3. A GPG key for signing, its public half sent to `keyserver.ubuntu.com` (`gpg --keyserver keyserver.ubuntu.com --send-keys <id>`), so Central can verify the signatures.
+4. Four secrets in the `maven-central` environment of `localaze-kotlin`, which only version tags can use: `CENTRAL_USERNAME` and `CENTRAL_PASSWORD` (the token), `LOCALAZE_SIGNING_KEY` (`gpg --armor --export-secret-keys <id>`) and `LOCALAZE_SIGNING_PASSWORD`.
 
 **Swift.** Nothing is uploaded: the tag is the release. Its job checks the tag is on `main`, and creates the GitHub release with the changelog entry as notes. The Swift Package Index picks the tag up on its own.
 
