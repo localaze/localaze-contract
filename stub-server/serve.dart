@@ -84,11 +84,13 @@ late final Directory fixtures;
 
 Future<void> main(List<String> args) async {
   final port = _intArg(args, '--port') ?? 8787;
-  fixtures = Directory('${Directory.current.path}/../../contract/fixtures');
+  // Beside this script, wherever it is run from: the contract's own checkout,
+  // or the contract/ submodule inside an SDK repository.
+  fixtures = Directory.fromUri(Platform.script.resolve('../fixtures/'));
 
   if (!fixtures.existsSync()) {
     stderr.writeln('Fixtures not found at ${fixtures.path}.');
-    stderr.writeln('Run this from examples/stub-server/.');
+    stderr.writeln('Run this from a checkout of localaze-contract, which has fixtures/ beside stub-server/.');
     exitCode = 1;
     return;
   }
