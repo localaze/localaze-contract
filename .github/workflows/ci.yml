@@ -1,0 +1,61 @@
+# A change to the contract is tested twice: on its own, and by running every
+# SDK's suite against it. The second is the point. A contract change that would
+# break one SDK shows up here, in the contract's own pull request, rather than
+# first in that SDK's next build.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: Contract is well formed
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JSON and conformance cases
+        run: python3 scripts/check-contract.py
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Stub read API serves the fixtures
+        run: |
+          dart run stub-server/serve.dart --port 8787 > stub.log 2>&1 &
+          for _ in $(seq 1 30); do curl -sf -o /dev/null http://localhost:8787/control/scenarios && break; sleep 1; done
+          curl -sf -H 'X-Localaze-Key: demo-key' http://localhost:8787/api/v1/read/version
+          curl -sf -H 'X-Localaze-Key: demo-key' -o /dev/null http://localhost:8787/api/v1/read/manifest
+          curl -sf -H 'X-Localaze-Key: demo-key' -o /dev/null 'http://localhost:8787/api/v1/read/translations/ru?format=resolved'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8787/api/v1/read/version)" = 401
+
+  dart:
+    name: Dart against this contract
+    needs: contract
+    uses: localaze/localaze-dart/.github/workflows/ci.yml@main
+    with:
+      contract-ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  swift:
+    name: Swift against this contract
+    needs: contract
+    uses: localaze/localaze-swift/.github/workflows/ci.yml@main
+    with:
+      contract-ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  kotlin:
+    name: Kotlin against this contract
+    needs: contract
+    uses: localaze/localaze-kotlin/.github/workflows/ci.yml@main
+    with:
+      contract-ref: ${{ github.event.pull_request.head.sha || github.sha }}
