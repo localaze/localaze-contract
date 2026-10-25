@@ -1,16 +1,37 @@
-# contract
+# Localaze SDK contract
 
-Not a package. The one written specification the three SDKs implement, and the one fixture project they are all tested against.
+The specification the [Localaze](https://localize.sharpy.dev) SDKs implement, and the fixtures they are all tested against. Not a package: nothing here is installed by an app.
+
+[![CI](https://github.com/localaze/localaze-contract/actions/workflows/ci.yml/badge.svg)](https://github.com/localaze/localaze-contract/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+| SDK | Implements this for |
+|---|---|
+| [localaze-dart](https://github.com/localaze/localaze-dart) | Dart and Flutter |
+| [localaze-swift](https://github.com/localaze/localaze-swift) | iOS and macOS |
+| [localaze-kotlin](https://github.com/localaze/localaze-kotlin) | Android and the JVM |
+
+Each SDK includes this repository as a git submodule at `contract/`, pinned to a commit, and runs its whole suite against it. Three implementations of one written contract, tested against one set of fixtures, is how a string renders the same on every platform.
 
 | File | Contents |
 |---|---|
 | `runtime-contract.md` | **The runtime specification.** Catalog format, rendering, signature, update policy, fetching, resolution order, failure, configuration |
 | `generator-contract.md` | **The generator specification.** The command, its inputs and checks, and the generated source every platform emits |
-| `conformance.json` | Every case all three packages must pass, with the rule each one enforces |
+| `conformance.json` | Every case all three SDKs must pass, with the rule each one enforces |
+| `fixtures/` | The fixture project: manifest, signature, catalogs, expected renders, and the updates that exercise policy and refusal |
+| `stub-server/` | A stand-in for the Localaze read API over the fixtures, for the example apps: `dart run stub-server/serve.dart` |
+| `CLAUDE.md` | The rules every SDK follows |
+| `RELEASING.md` | How the three SDKs are versioned and released, together |
+| `scripts/` | The checks CI runs: the contract is well formed, and README code is code that compiles |
+
+## The fixture files
+
+| File | Contents |
+|---|---|
 | `fixtures/manifest.json` | The typed manifest for the fixture project, as the read API serves it |
 | `fixtures/signature.json` | What the generated code promises — names **and** types |
 | `fixtures/catalogs/` | The good catalogs, `az` and `ru`, at version `1.0.0` |
-| `fixtures/expected-renders.json` | Exact output every package must produce |
+| `fixtures/expected-renders.json` | Exact output every SDK must produce |
 | `fixtures/updates/` | Catalogs that exercise policy and signature refusal |
 | `fixtures/bundled/` | A partial asset, for per-key fallback |
 
@@ -46,19 +67,20 @@ It is a **patch**, so the policy accepts it. Every key is present, so a key-set 
 
 But the type changed from `NUMBER` to `STRING`, and the message stopped selecting. Generated code has already promised every call site `inboxUnread(count: Int)`. Applying this catalog makes that promise false.
 
-The backend's Dart generator, since removed, emitted a signature of parameter names only, so the runtime it generated accepted this catalog. That was the defect. This fixture is the regression test for it.
+An earlier generator emitted a signature of parameter names only, so the runtime it generated accepted this catalog. That was the defect, and this fixture is the regression test for it.
 
 ## Keeping it single
 
-These files are the only copy. The backend generators, and the Java copy of this fixture their tests carried, were removed when generation moved into the SDKs.
+These files are the only copy. Every SDK reads them through its `contract/` submodule; none keeps its own.
 
-`manifest.json` was produced by the server's own plural rule compiler and hashing. The catalogs are hand-written to the shape `Mf2Resolver.resolve` produces. Nothing yet asserts that the checked-in files equal the server's output, so a change to either side of that boundary must be mirrored by hand.
+`manifest.json` was produced by the server's own plural rule compiler and hashing. The catalogs are hand-written to the shape the server's resolver produces. Nothing yet asserts that the checked-in files equal the server's output, so a change to either side of that boundary must be mirrored by hand.
 
 ## Adding a case
 
 1. Write the rule in `runtime-contract.md` or `generator-contract.md` first.
 2. Add the fixture it needs.
 3. Add the case to `conformance.json`.
-4. Implement it in **all three** packages.
+4. Open a pull request here. CI checks the contract, then runs all three SDKs against it, so you see which ones the change would break.
+5. Once it merges, each SDK gets a pull request moving its `contract/` forward. Implement the case there, in **all three**.
 
 A behaviour in one package and not the others is a defect, even when the odd one out is better. That is the promise the three SDKs make, and the suite is here to enforce it.

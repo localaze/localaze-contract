@@ -1,0 +1,15 @@
+name: Feature request
+description: A new option, behaviour or platform
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you are trying to do
+      description: The problem, before the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like the SDK to do
