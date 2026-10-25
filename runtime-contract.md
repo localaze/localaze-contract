@@ -1,10 +1,10 @@
 # The SDK runtime contract
 
-One specification, three implementations. Dart, Swift and Kotlin implement exactly what is written here, and `LZ-54` guarantees they behave identically. A behaviour that exists in one package and not the others is a defect, even when the odd one out is better.
+One specification, three implementations. Dart, Swift and Kotlin implement exactly what is written here, and they behave identically. A behaviour that exists in one package and not the others is a defect, even when the odd one out is better.
 
 Everything here is exercised by `fixtures/` and enumerated in `conformance.json`.
 
-Sources: `LZ-58` (fetch, cache, offline), `LZ-59` (the resolved payload), `LZ-62` (what major, minor and patch mean), `LZ-65` (catalogs, updates, policy).
+It covers fetching, caching and working offline, the resolved payload, what major, minor and patch mean for an update, and the update policy.
 
 ---
 
@@ -24,7 +24,7 @@ Wording changes most often, so wording must be the thing that ships without rege
 
 ## 2. Catalog format
 
-A catalog is one language's messages in the resolved shape of `LZ-59`. **It contains no MF2 syntax.** A device walks parts and concatenates; it never parses.
+A catalog is one language's messages in the resolved shape the read API serves (`format=resolved`). **It contains no MF2 syntax.** A device walks parts and concatenates; it never parses.
 
 A catalog file is **byte-identical in shape to the read API's response body**, so a bundled asset and a fetched payload go through one parser and one code path. Do not invent a second envelope for bundled files.
 
@@ -61,7 +61,7 @@ Only `version` and `messages` are required by the runtime. The rest is context, 
 - `variants` — variant category to an ordered list of parts. A message with no selection has the single key `*`.
 - A part is **either** `{"text": ...}` **or** `{"var": ..., "type": ...}`. Never both. Null fields are omitted by the server, so absence is meaningful and a part with neither field is malformed.
 
-`*` is guaranteed present on every message by `LZ-07`. The runtime relies on that: a variant category missing from a fetched message **falls back to `*`** rather than failing.
+`*` is guaranteed present on every message: the platform refuses to save a selection without a catch-all. The runtime relies on that: a variant category missing from a fetched message **falls back to `*`** rather than failing.
 
 ---
 
@@ -134,7 +134,7 @@ Policy is about **intent** — "we do not want minor updates in this build". The
 
 Rules that hold under every policy, including a range:
 
-- **A different major is refused.** `LZ-62` defines major as signature-breaking by construction, so its messages no longer take the parameters generated call sites pass. That is not a stale screen, it is a wrong one.
+- **A different major is refused.** The platform defines a major release as signature-breaking by construction, so its messages no longer take the parameters generated call sites pass. That is not a stale screen, it is a wrong one.
 - A version **older** than the one held is refused. Downgrade is not an update.
 - A refused update leaves the previous catalog in place.
 
@@ -142,7 +142,7 @@ Rules that hold under every policy, including a range:
 
 Versions compare numerically field by field, not as strings: `1.10.0` is greater than `1.9.0`. A malformed version compares as refused.
 
-`LZ-62` guarantees a release marked minor or patch can never be signature-incompatible. The runtime checks anyway. That is belt and braces, and the diagnostic distinguishes them — a signature failure on a minor release is a platform bug worth hearing about.
+The platform guarantees a release marked minor or patch can never be signature-incompatible. The runtime checks anyway. That is belt and braces, and the diagnostic distinguishes them — a signature failure on a minor release is a platform bug worth hearing about.
 
 ---
 

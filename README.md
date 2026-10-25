@@ -7,7 +7,7 @@ Not a package. The one written specification the three SDKs implement, and the o
 | `runtime-contract.md` | **The runtime specification.** Catalog format, rendering, signature, update policy, fetching, resolution order, failure, configuration |
 | `generator-contract.md` | **The generator specification.** The command, its inputs and checks, and the generated source every platform emits |
 | `conformance.json` | Every case all three packages must pass, with the rule each one enforces |
-| `fixtures/manifest.json` | The typed manifest for the fixture project, as `LZ-53` defines it |
+| `fixtures/manifest.json` | The typed manifest for the fixture project, as the read API serves it |
 | `fixtures/signature.json` | What the generated code promises — names **and** types |
 | `fixtures/catalogs/` | The good catalogs, `az` and `ru`, at version `1.0.0` |
 | `fixtures/expected-renders.json` | Exact output every package must produce |
@@ -61,4 +61,4 @@ These files are the only copy. The backend generators, and the Java copy of this
 3. Add the case to `conformance.json`.
 4. Implement it in **all three** packages.
 
-A behaviour in one package and not the others is a defect, even when the odd one out is better. That is what `LZ-54` guarantees and what the suite is here to enforce.
+A behaviour in one package and not the others is a defect, even when the odd one out is better. That is the promise the three SDKs make, and the suite is here to enforce it.

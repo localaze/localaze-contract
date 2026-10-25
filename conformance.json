@@ -216,7 +216,7 @@
     {
       "id": "resolution.offline-first-launch",
       "group": "resolution",
-      "rule": "LZ-58 — works fully offline on first launch",
+      "rule": "works fully offline on first launch",
       "given": "Fresh install, no network, no cache",
       "expect": "Every key renders from the bundled asset with no request made"
     },
@@ -314,14 +314,14 @@
     {
       "id": "config.version-in-use-readable",
       "group": "config",
-      "rule": "LZ-65",
+      "rule": "contract §9",
       "given": "Any state",
       "expect": "The version currently rendering is readable, so an app can report it"
     },
     {
       "id": "purity.no-mf2-parser",
       "group": "purity",
-      "rule": "contract §2, decision D7",
+      "rule": "contract §2: no MF2 on the device",
       "given": "The package source",
       "expect": "No MF2 parsing, no '.match', no '.input', no '{{'. A device never sees MF2 syntax"
     },

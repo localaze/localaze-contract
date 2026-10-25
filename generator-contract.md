@@ -1,10 +1,10 @@
 # The SDK generator contract
 
-One specification, three generators. Each SDK package ships a command that turns a published release into the **generated source** and the **catalogs** of `runtime-contract.md` §1. Dart, Swift and Kotlin implement exactly what is written here, and `LZ-54` guarantees the generated code behaves identically on all three.
+One specification, three generators. Each SDK package ships a command that turns a published release into the **generated source** and the **catalogs** of `runtime-contract.md` §1. Dart, Swift and Kotlin implement exactly what is written here, and the generated code behaves identically on all three.
 
 Generation runs on a developer machine or in CI, never on a device. It is the only place in this folder that touches the network and the filesystem directly, which is why each generator is a separate entry point from its package's core.
 
-Sources: `LZ-53` (the manifest), `LZ-54` (type safety and required translations), `LZ-55`–`LZ-57` (per platform), `LZ-65` (catalogs).
+It covers the manifest a generator reads, type safety and required translations, what each platform emits, and the catalogs written beside the code.
 
 ---
 
@@ -60,7 +60,7 @@ Generation fails, naming each problem, when:
 
 | Check | Why |
 |---|---|
-| A language in the manifest has no catalog | Required translations (`LZ-54`) |
+| A language in the manifest has no catalog | Required translations |
 | A catalog lacks a key the manifest names | Required translations. Waived by `--allow-gaps` |
 | A catalog's `version` differs from the manifest's | The code and the text would describe different releases |
 | A plural rule uses an operand other than `n`, `i` or `v` | §7 declares only those three. Failing is better than generating code that does not compile |
@@ -166,7 +166,7 @@ That is what lets the generated file be checked in and reviewed, and what makes 
 Every generator is tested against `fixtures/manifest.json` and `fixtures/catalogs/`:
 
 - **Golden.** The output for the fixtures is checked in to each package. A test regenerates it and asserts the result is byte-identical. A change to generator output is therefore a reviewed diff, never an accident.
-- **Behaviour.** The checked-in output is compiled against the package and renders every row of `fixtures/expected-renders.json`. That is the `LZ-54` guarantee: the three generators agree because their output renders the same strings, not because their source looks alike.
+- **Behaviour.** The checked-in output is compiled against the package and renders every row of `fixtures/expected-renders.json`. That is the cross-platform guarantee: the three generators agree because their output renders the same strings, not because their source looks alike.
 - **Failure.** Each row of §4 has a test asserting the generator exits non-zero, names the problem, and writes nothing.
 
 The cases are enumerated in `conformance.json` under the group `generator`.
