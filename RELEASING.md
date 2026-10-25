@@ -1,16 +1,24 @@
 # Releasing the SDKs
 
-How the Dart, Swift and Kotlin packages are versioned and published. Every step below was rehearsed locally against a throwaway consumer; **nothing has been tagged, pushed or uploaded**.
+How the Dart, Swift and Kotlin SDKs are versioned and published. This file lives in `localaze-contract`, so every SDK repository has it at `contract/RELEASING.md`.
+
+## Where each one goes
+
+| Repository | Published to | Install |
+|---|---|---|
+| [`localaze-dart`](https://github.com/localaze/localaze-dart) | A git tag for now. pub.dev comes later | `git:` dependency at `ref: <version>` |
+| [`localaze-swift`](https://github.com/localaze/localaze-swift) | The tag itself; SwiftPM reads it from the repository. Listed on the Swift Package Index | `.package(url: "https://github.com/localaze/localaze-swift.git", from: "<version>")` |
+| [`localaze-kotlin`](https://github.com/localaze/localaze-kotlin) | Maven Central, group `dev.sharpy.localaze` | `implementation("dev.sharpy.localaze:localaze-android:<version>")` |
 
 ## License
 
-MIT, copyright Sharabiddin Ahmayev, while the platform around them is under the Elastic License 2.0 (`LICENSING.md` at the root). `frontend/sdks/LICENSE` covers everything in this folder, and each package carries its own copy, because each one is consumed on its own — the Swift package from a repository of its own — and pub checks the package folder. The Maven POMs declare it too.
+MIT, copyright Sharabiddin Ahmayev. Every repository carries its own `LICENSE`, and the Maven POMs and the pubspecs declare it too. The Localaze platform these SDKs talk to is under a different licence; nothing here depends on it.
 
 ## Versioning
 
-**One version for all three platforms.** `LZ-54` guarantees the packages behave identically, and that guarantee is only checkable if "0.3.0" means the same contract on every platform. A change to one package is released as a new version of all of them, even when the others did not change.
+**One version for all three platforms.** The SDKs are promised to behave identically, and that promise is only checkable if "0.3.0" means the same contract on every platform. A change to one SDK is released as a new version of all of them, even when the others did not change.
 
-The version is semantic, and it is about the **package**, not about translation content. Content releases have their own semver (`LZ-62`) and a package version never moves because wording did.
+The version is semantic, and it is about the **package**, not about translation content. Content releases have their own versions, and a package version never moves because wording did.
 
 | Bump | When |
 |---|---|
@@ -22,111 +30,79 @@ The version is semantic, and it is about the **package**, not about translation 
 
 While the version is `0.x`, a minor may break, as semver allows. Leave `0.x` once an app has shipped on it.
 
-Every package has a `CHANGELOG.md`. The top entry is `unreleased` until the release is cut.
+The first public version is **0.2.0**, not 0.1.0. The name `localaze` on pub.dev already has a 0.1.0 from an earlier package by the same owner, and pub.dev never reuses a version. All three platforms start at 0.2.0 to stay in step.
 
-## Before any release
+Every repository has a `CHANGELOG.md` per package. The top entry is `Unreleased` until the release is cut.
 
-All of these, from `frontend/sdks/`:
+Tags carry no prefix (`0.2.0`), as SwiftPM requires, and are the same in every repository. A tag is never moved or deleted once pushed: SwiftPM and Gradle cache what it pointed to.
+
+## Before a release
+
+Each repository's CI runs its whole suite on every pull request and every push to `main`, against the contract its `contract/` submodule pins. A release is cut only from commits whose CI is green, and only when **every SDK pins the same contract commit**.
+
+To run the same suites by hand, in each repository:
 
 ```
-(cd localaze-dart && dart test)                       # runtime + generator
-(cd localaze-flutter && flutter analyze)
-(cd localaze-swift && swift test)                     # runtime + generator + golden
-(cd localaze-kotlin && ./gradlew test)                # runtime + generator + golden
+# localaze-dart
+(cd localaze && dart test)
+(cd localaze_flutter && flutter analyze)
 (cd examples/flutter_app && flutter test)
+
+# localaze-swift
+swift test
 (cd examples/swiftui-app && swift test)
+
+# localaze-kotlin (JDK 17+; the Android builds also need ANDROID_HOME)
+./gradlew test
 (cd examples/android-app && ./verify-generated.sh)
+(cd android && ../gradlew -p . assembleRelease)
+(cd examples/android-app && ../../gradlew -p . assembleDebug)
 ```
 
-The Android adapters and the Compose demo also need a real Android build, which needs JDK 17+ and an Android SDK:
+## Cutting a release
+
+From the Localaze platform repository, which holds all four repositories as submodules:
 
 ```
-(cd localaze-kotlin-android && JAVA_HOME=<jdk17+> ANDROID_HOME=<sdk> ../localaze-kotlin/gradlew -p . assembleRelease)
-(cd examples/android-app && JAVA_HOME=<jdk17+> ANDROID_HOME=<sdk> ../../localaze-kotlin/gradlew -p . assembleDebug)
+make release-sdk VERSION=0.2.0 DRY_RUN=1   # shows every change and tag, makes none
+make release-sdk VERSION=0.2.0
 ```
 
-Then set the version in every manifest, move each changelog's `unreleased` heading to the version and date, and commit.
+It refuses, with the reason, unless every submodule is on its repository's `main` with green CI, every SDK pins the same contract, the version is new and higher than the last, and every changelog has an `Unreleased` entry. It then sets the version in every manifest, dates the changelogs, commits and tags each repository, and waits for the release jobs. Each one reports published, accepted, or failed with the registry's reason. Running it again with the same version finishes only the platforms still missing it; nothing that was published is undone.
+
+Without the platform repository, the same steps by hand: set the version in every manifest below, turn each `Unreleased` heading into `<version> — <date>`, commit, then tag the same version in all four repositories and push the tags.
 
 | Package | Version lives in |
 |---|---|
-| `localaze-dart` | `pubspec.yaml` |
-| `localaze-flutter` | `pubspec.yaml` |
-| `localaze-swift` | the git tag only |
-| `localaze-kotlin`, generator | `build.gradle.kts` (`version`) |
-| `localaze-kotlin-android` | `build.gradle.kts` (`version`, and the core dependency's version) |
+| `localaze` (Dart) | `localaze/pubspec.yaml` |
+| `localaze_flutter` | `localaze_flutter/pubspec.yaml`, and its constraint on `localaze` |
+| `Localaze` (Swift) | the tag only |
+| `localaze`, `localaze-generator` | `build.gradle.kts` (`version`) |
+| `localaze-android` | `android/build.gradle.kts` (`version`, and the core dependency's version) |
+| The examples | `examples/flutter_app/pubspec.yaml`, `examples/android-app/build.gradle.kts`; kept in step, never published |
+| The examples | `examples/flutter_app/pubspec.yaml`, `examples/android-app/build.gradle.kts`; kept in step, never published |
 
-## Kotlin — a Maven repository
+## What each tag does
 
-Three artifacts, group `dev.sharpy.localaze`:
+**Kotlin.** The tag's release job builds the three artifacts, signs every file with the release GPG key, and uploads them to the Central Portal as **one** deployment. Central validates it; a deployment that fails validation publishes nothing. Accepted versions take up to about thirty minutes to appear in search. The job's secrets — the Portal token and the signing key — exist only in that job, on a tag.
 
-| Artifact | Contents |
-|---|---|
-| `localaze` | The runtime, with sources |
-| `localaze-generator` | The self-contained generator jar |
-| `localaze-android` | The Android AAR, with sources. Depends on `localaze` |
+**Swift.** Nothing is uploaded: the tag is the release. Its job checks the tag is on `main`, and creates the GitHub release with the changelog entry as notes. The Swift Package Index picks the tag up on its own.
 
-The repository comes from the environment, so no URL or secret is committed:
-
-```
-export LOCALAZE_MAVEN_URL=...          # the registry's Maven endpoint
-export LOCALAZE_MAVEN_USER=...
-export LOCALAZE_MAVEN_PASSWORD=...
-
-(cd localaze-kotlin && ./gradlew publish)
-(cd localaze-kotlin-android && ../localaze-kotlin/gradlew -p . publish)
-```
-
-Without the variables, `publishToMavenLocal` publishes to `~/.m2` for rehearsal. On GitLab the endpoint is `https://gitlab.com/api/v4/projects/<project id>/packages/maven`, with a deploy token as the user and password.
-
-An app then declares the repository and depends on `dev.sharpy.localaze:localaze-android:<version>`, and runs the generator jar from its build.
-
-## Dart and Flutter — a git dependency
-
-GitLab hosts no pub registry, so an app depends on this repository at a release tag:
+**Dart.** The tag is the release, consumed as a git dependency:
 
 ```yaml
 dependencies:
   localaze_flutter:
     git:
-      url: https://gitlab.com/aaset355/localaze.git
-      path: frontend/sdks/localaze-flutter
-      ref: sdk-v0.1.0
-  localaze:
-    git:
-      url: https://gitlab.com/aaset355/localaze.git
-      path: frontend/sdks/localaze-dart
-      ref: sdk-v0.1.0
+      url: https://github.com/localaze/localaze-dart.git
+      path: localaze_flutter
+      ref: 0.2.0
 ```
 
-`localaze_flutter`'s relative dependency on `localaze` resolves inside the same checkout, so a Flutter app needs only the first entry. A Dart-only app needs only the second. `dart run localaze:generate` works from the dependency.
+`localaze_flutter` depends on `localaze` by a relative path inside the same checkout, so a Flutter app needs only that entry, and a Dart-only app uses `path: localaze` instead. When the packages move to pub.dev, that dependency becomes a version constraint and the release job runs `dart pub publish` through pub.dev's automated publishing from GitHub, with no stored token.
 
-Releasing is the tag:
+## When part of a release fails
 
-```
-git tag sdk-v0.1.0 && git push origin sdk-v0.1.0
-```
+Registries never take a version back, and pulling the platforms that succeeded would break apps that already resolved them. So a partial release is finished, not undone: fix the cause, and run `make release-sdk` again with the same version. Until every platform has it, the release is incomplete and the next version cannot be started.
 
-If an internal pub registry appears, set `publish_to` in both pubspecs, change the binding's dependency to a version constraint, and run `dart pub publish`.
-
-## Swift — its own repository
-
-SwiftPM requires `Package.swift` at a repository's root, so a package in a subfolder cannot be depended on by URL. The Swift package is released from a repository of its own, split from this one with its history:
-
-```
-git subtree split --prefix=frontend/sdks/localaze-swift -b swift-release
-git push <swift repository> swift-release:main
-git push <swift repository> <commit>:refs/tags/0.1.0
-```
-
-SwiftPM tags carry no prefix. An app then adds the package by URL `from: "0.1.0"`, and runs `swift run localaze-generate` from it.
-
-The split repository does not contain `contract/`, so its tests cannot run there. They run here, before the split.
-
-## Owed before the first release
-
-| Item | Why it blocks | Who decides |
-|---|---|---|
-| The Maven registry, and its credentials in CI | `LOCALAZE_MAVEN_URL` has nowhere to point | Whoever owns the registry |
-| The Swift repository | The split has nowhere to go | Whoever owns the GitLab group |
-| Confirming the baselines | Each package's `CLAUDE.md` records them as chosen, not confirmed | The app teams |
-| CI jobs running the suites above | A release should not depend on someone remembering the list. Swift needs a macOS runner | Whoever owns the pipeline |
+A broken release is fixed by a new version.
